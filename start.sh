@@ -34,7 +34,7 @@ elif [ "$1" == "restore" ]; then
     if [ -n "$2" ]; then
         archives=$2.gz
     else
-        archives=`/usr/local/bin/azure storage blob list -a $AZURE_STORAGE_ACCOUNT -k "$AZURE_STORAGE_ACCESS_KEY" $AZURE_STORAGE_CONTAINER | grep ".gz" | awk "{print $2}"`
+        archives=`/usr/local/bin/azure storage blob list -a $AZURE_STORAGE_ACCOUNT -k "$AZURE_STORAGE_ACCESS_KEY" $AZURE_STORAGE_CONTAINER | grep ".gz" | awk '{split($0,a," "); print a[2]}'`
     fi
 
     for archive in $archives; do
