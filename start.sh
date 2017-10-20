@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [ "${RESTORE_DB_CHARSET}" = "" ]; then
+  export RESTORE_DB_CHARSET=utf8
+fi
+
+if [ "${RESTORE_DB_COLLATION}" = "" ]; then
+  export RESTORE_DB_COLLATION=utf8_bin
+fi
+
 PASS_OPT=
 
 if [ -n $MYSQL_PASSWORD ]; then
@@ -19,7 +27,7 @@ if [ "$1" == "backup" ]; then
         mysqldump --force --opt --host=$MYSQL_HOST --port=$MYSQL_PORT --user=$MYSQL_USER --databases $db ${PASS_OPT} | gzip > "/tmp/$db.gz"
 
         if [ $? == 0 ]; then
-            /usr/local/bin/azure storage blob upload /tmp/$db.gz $AZURE_STORAGE_CONTAINER -c "DefaultEndpointsProtocol=https;BlobEndpoint=https://$AZURE_STORAGE_ACCOUNT.blob.core.windows.net/;AccountName=$AZURE_STORAGE_ACCOUNT;AccountKey=$AZURE_STORAGE_ACCESS_KEY"
+            yes | /usr/local/bin/azure storage blob upload /tmp/$db.gz $AZURE_STORAGE_CONTAINER -c "DefaultEndpointsProtocol=https;BlobEndpoint=https://$AZURE_STORAGE_ACCOUNT.blob.core.windows.net/;AccountName=$AZURE_STORAGE_ACCOUNT;AccountKey=$AZURE_STORAGE_ACCESS_KEY"
 
             if [ $? == 0 ]; then
                 rm /tmp/$db.gz
@@ -43,7 +51,7 @@ elif [ "$1" == "restore" ]; then
         echo "restoring $archive"
         echo "...transferring"
 
-        /usr/local/bin/azure storage blob download  -a $AZURE_STORAGE_ACCOUNT -k "$AZURE_STORAGE_ACCESS_KEY" $AZURE_STORAGE_CONTAINER $archive $tmp
+        yes | /usr/local/bin/azure storage blob download  -a $AZURE_STORAGE_ACCOUNT -k "$AZURE_STORAGE_ACCESS_KEY" $AZURE_STORAGE_CONTAINER $archive $tmp
 
         if [ $? == 0 ]; then
             echo "...restoring"
